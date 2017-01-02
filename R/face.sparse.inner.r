@@ -11,7 +11,6 @@
 # Note that: we only handle complete data, so missing values are not allowed at this moment
 
 ## "newdata" is of the same strucutre as "data". 
-## If NULL, then "newdata" will be the same as "data"
 ## To predict at new values of "argvals", make the corresponding "y" NA
 
 ### "center" means if we want to compute population mean
@@ -19,15 +18,15 @@
 ### "argvals.new" if we want the estimated covariance function at "argvals.new"; if NULL,
 ### then 100 equidistant points in the range of "argvals" in "data"
 
-### "knots" is the number of knots for B-spline basis functions to be used; 
+### "knots" is the number of interior knots for B-spline basis functions to be used; 
 
 face.sparse.inner <- function(data, newdata = NULL, W = NULL,
-                            center=TRUE,argvals.new=NULL,
-                        knots=10, knots.option="quantile",
-                        p=3,m=2,lambda=NULL,lambda_mean=NULL,
-                        search.length=14,
-                        lower=-3,upper=10, 
-                        calculate.scores=FALSE,pve=0.99){
+                              center=TRUE,argvals.new=NULL,
+                              knots=7, knots.option="equally-spaced",
+                              p=3,m=2,lambda=NULL,lambda_mean=NULL,
+                              search.length=14,
+                              lower=-3,upper=10, 
+                              calculate.scores=FALSE,pve=0.99){
   
   #########################
   ####step 0: read in data
@@ -75,7 +74,7 @@ face.sparse.inner <- function(data, newdata = NULL, W = NULL,
   #########################
   knots <- construct.knots(t,knots,knots.option,p)
   
-  List <- pspline.setting(st[,1],knots=knots,p,m,type="simple")
+  List <- pspline.setting(st[,1],knots=knots,p,m,type="simple",knots.option=knots.option)
   B1 <- List$B
   B1 <- Matrix(B1)
   DtD <- List$P
@@ -111,7 +110,7 @@ face.sparse.inner <- function(data, newdata = NULL, W = NULL,
   E = E + 0.000001*max(E)
   Sigi_sqrt = matrix.multiply(V,1/sqrt(E))%*%t(V)
   
-  P = crossprod(G,Matrix(kronecker(diag(c),DtD)))%*%G
+  P = crossprod(G,Matrix(suppressMessages(kronecker(diag(c),DtD))))%*%G
   
   Q = bdiag(P,0)
   tUQU = crossprod(Sigi_sqrt,(Q%*%Sigi_sqrt))
@@ -130,13 +129,12 @@ face.sparse.inner <- function(data, newdata = NULL, W = NULL,
   c2 <- c2 + 1
   g <- rep(0, c2)
   G1 <- matrix(0,c2,c2)
-  c3 <- min(c2,50)
-  G3 <- matrix(0,c3^2,c3) 
-   
+  mat_list <- list()
+    
   for(i in 1:n0){
     seq = (sum(N2[1:i])-N2[i]+1):(sum(N2[1:i]))
     Ai = matrix(A[seq,],nrow=length(seq))
-    AitAi = t(Ai)%*%Ai
+    AitAi = crossprod(Ai) #t(Ai)%*%Ai
     Wi = W[[i]]
     
     fi = crossprod(Ai,C[seq]) # t(Fi)Ci
@@ -144,8 +142,11 @@ face.sparse.inner <- function(data, newdata = NULL, W = NULL,
     Li = crossprod(Ai,Wi%*%Ai)
     g = g + Ji*fi
     G1 = G1 + AitAi*(Ji%*%t(ftilde))
-    G3 = G3 + kr(as.matrix(Li[(c2-c3+1):c2,(c2-c3+1):c2]), 
-                 AitAi[(c2-c3+1):c2,(c2-c3+1):c2],byrow=FALSE)#/N2[i]
+  
+    LList <- list()
+    LList[[1]] = AitAi
+    LList[[2]] = Li
+    mat_list[[i]] = LList
     
    }
   
@@ -160,9 +161,11 @@ face.sparse.inner <- function(data, newdata = NULL, W = NULL,
     cv1 <-  sum(ftilde_d*(AtA%*%ftilde_d))
     cv2 <-  2*sum(d*g)
     cv3 <-  -4*sum(d*(G1%*%d))
-    ftilde_d_short <- ftilde_d[(c2-c3+1):c2]
-    cv4 <-  2*sum(crossprod(G3,as.vector(ftilde_d_short%*%t(ftilde_d_short)))*d[(c2-c3+1):c2])
-    
+    cv4 <- sum(unlist(sapply(mat_list,function(x){
+      a <- x[[1]]%*%ftilde_d
+      b <- x[[2]]%*%ftilde_d
+      2*sum(a*b*d)
+    })))
     cv <- cv0 + cv1 + cv2 + cv3 + cv4
     return(cv)
   }
@@ -180,16 +183,20 @@ face.sparse.inner <- function(data, newdata = NULL, W = NULL,
   Theta <- G %*% alpha[1:c2-1]
   Theta <- matrix(Theta,c,c)         # parameter estimated (sym)
   sigma2 <- alpha[c2]
+  if(sigma2 <= 0.000001) {                                               
+    warning("error variance cannot be non-positive, reset to 1e-6!")    
+    sigma2 <- 0.000001                                                  
+  }
   
   Eigen <- eigen(Theta,symmetric=TRUE)
   Eigen$values[Eigen$values<0] <- 0
-  npc <- which.max(cumsum(Eigen$values)/sum(Eigen$values)>pve)[1]
+  npc <- sum(Eigen$values>0) #which.max(cumsum(Eigen$values)/sum(Eigen$values)>pve)[1]
   if(npc >1){
     Theta <- matrix.multiply(Eigen$vectors[,1:npc],Eigen$values[1:npc])%*%t(Eigen$vectors[,1:npc])
     Theta_half <- matrix.multiply(Eigen$vectors[,1:npc],sqrt(Eigen$values[1:npc]))
   }
   if(npc==1){
-    Theta <- Eigen$values[1]*kronecker(Eigen$vectors[,1],t(Eigen$vectors[,1]))
+    Theta <- Eigen$values[1]*suppressMessages(kronecker(Eigen$vectors[,1],t(Eigen$vectors[,1])))
     Theta_half <- sqrt(Eigen$values[1])*Eigen$vectors[,1]
   }
   Eigen <- eigen(Theta,symmetric=TRUE)
@@ -202,6 +209,7 @@ face.sparse.inner <- function(data, newdata = NULL, W = NULL,
   Chat.diag.new = as.vector(diag(Chat.new))  
   Cor.new = diag(1/sqrt(Chat.diag.new))%*%Chat.new%*%diag(1/sqrt(Chat.diag.new))
   Eigen.new = eigen(Chat.new,symmetric=TRUE)
+  npc = which.max(cumsum(Eigen$values)/sum(Eigen$values)>pve)[1] #determine number of PCs
   eigenfunctions = matrix(Eigen.new$vectors[,1:min(npc,length(tnew))],ncol=min(npc,length(tnew)))
   eigenvalues = Eigen.new$values[1:min(npc,length(tnew))]
   eigenfunctions = eigenfunctions*sqrt(length(tnew))/sqrt(max(tnew)-min(tnew))
@@ -211,8 +219,8 @@ face.sparse.inner <- function(data, newdata = NULL, W = NULL,
   #########################
   ####step 5: calculate variance
   #########################
-  var.error.hat <- rep(max(sigma2,0.000001),length(t))
-  var.error.new <- rep(max(sigma2,0.000001),length(tnew))
+  var.error.hat <- rep(sigma2,length(t))
+  var.error.new <- rep(sigma2,length(tnew))
 
   
   
@@ -225,7 +233,7 @@ face.sparse.inner <- function(data, newdata = NULL, W = NULL,
   if(!is.null(newdata)){
   
   mu.pred <- rep(0,length(newdata$argvals))
-  var.error.pred <- rep(max(sigma2,0.000001),length(newdata$argvals))
+  var.error.pred <- rep(sigma2,length(newdata$argvals))
   if(center){
     mu.pred <- predict.pspline(fit_mean,newdata$argvals)
   }
@@ -296,9 +304,7 @@ face.sparse.inner <- function(data, newdata = NULL, W = NULL,
    
  }
 
- #B3 = spline.des(knots=knots, x=t, ord = p+1,outer.ok = TRUE,sparse=TRUE)$design
- #DIAG <- as.vector(r^2- apply(B3%*%Theta_half,1,function(x){sum(x^2)}))
- #sigma2_a <- mean(DIAG,trim=0.2)
+
  
   res <- list(newdata=newdata, W = W, y.pred = y.pred, Theta=Theta,argvals.new=tnew, 
               mu.new = mu.new, Chat.new=Chat.new, var.error.new = var.error.new,
@@ -310,7 +316,7 @@ face.sparse.inner <- function(data, newdata = NULL, W = NULL,
               se.pred = se.pred,
               fit_mean = fit_mean, lambda_mean=fit_mean$lambda,
               lambda=lambda,Gcv=Gcv,Lambda=Lambda,knots=knots,knots.option=knots.option,s=s,npc=npc, p = p, m=m,
-              center=center,pve=pve,sigma2=sigma2, r = r)
+              center=center,pve=pve,sigma2=sigma2, r = r, DtD = DtD)
  
   class(res) <- "face.sparse"
   return(res)

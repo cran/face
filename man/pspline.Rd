@@ -8,7 +8,7 @@ Univariate P-spline smoothing with the smoothing parameter selected by leave-one
 }
 \usage{
 pspline(data, argvals.new = NULL, knots = 35,
-            knots.option="quantile",
+            knots.option="equally-spaced",
             p = 3, m = 2, lambda = NULL,
             search.length = 100,
             lower = -20, upper = 20)
@@ -29,9 +29,9 @@ a vector of observations times for prediction; if NULL, then the same as \code{d
 a vector of interior knots or the number of knots for B-spline basis functions to be used; defaults to 35.
 }
 \item{knots.option}{
-if \code{knots} specifies the number of knots, then \code{knots.option} will be used. Default
-"quantile", then quantiles of the observed time points will be selected; alternatively,
-"equally-spaced": equally-spaced knots in the range of observed time points will be selected.
+if \code{knots} specifies the number of interior knots, then \code{knots.option} will be used. Default
+"equally-spaced", then equally-spaced knots in the range of observed time points will be selected; alternatively,
+"quantile": quantiles of the observed time points will be selected.
 }
 
   \item{p}{
@@ -70,8 +70,8 @@ The function is an implementation of the P-spline smoothing in Eilers and Marx (
 Paul Eilers and Brian Marx, Flexible smoothing with B-splines and penalties,
 Statist. Sci., 11, 89-121, 1996.
 
-Luo Xiao, Cai Li, Will Checkley and Ciprian Crainiceanu, Fast covariance estimation
-for sparse functional data, manuscript.
+Luo Xiao, Cai Li, William Checkley and Ciprian Crainiceanu, Fast covariance estimation
+for sparse functional data, available at \url{https://arxiv.org/abs/1603.05758}.
 }
 \author{
 Luo Xiao <lxiao5@ncsu.edu>

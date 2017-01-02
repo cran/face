@@ -10,10 +10,10 @@ from a cluster of functions/longitudinal observations.}
 \usage{
 face.sparse(data, newdata = NULL,
              center = TRUE, argvals.new = NULL,
-             knots = 10, knots.option="quantile",
+             knots = 7, knots.option="equally-spaced",
              p = 3, m = 2, lambda = NULL, lambda_mean = NULL,
              search.length = 14, 
-             lower = -3, upper = 10, lower2 = -1, upper2 = 5,
+             lower = -3, upper = 10, lower2 = -3, upper2 = 5,
              calculate.scores = FALSE,pve=0.99)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -39,12 +39,14 @@ and etc. If NULL,
 then 100 equidistant points in the range of \code{data$argvals}.
 }
   \item{knots}{
-a vector of interior knots or the number of knots for B-spline basis functions to be used; defaults to 10.
+ the number of knots for B-spline basis functions to be used; defaults to 7.
+    The resulting number of basis functions is the number of interior knots plus the degree of B-splines.
 }
 
 \item{knots.option}{
-if \code{knots} specifies the number of knots, then \code{knots.option} will be used. Default "quantile": quantiles of the observed time points will be selected. Alternatively "equally-spaced", then
-equally-spaced knots in the range of observed time points will be selected.
+if \code{knots} specifies the number of knots, then \code{knots.option} will be used.  Default
+"equally-spaced", then equally-spaced knots in the range of observed time points will be selected; alternatively,
+"quantile": quantiles of the observed time points will be selected; see details.
 }
 
 \item{p}{
@@ -85,15 +87,19 @@ The only smoothing parameter in the method is selected
 by leave-one-subject-out cross validation and is implemented with a fast algorithm.
 
 There are two steps for estimation. During the first step, the objective function to minimize
-is the least squares on empirical estimates of covariance function. During the second step,
+is the penalized least squares on empirical estimates of covariance function. During the second step,
 the covariance between the empirical estimates (depending on the estimates of 
-covariance function) are accounted and thus a generalized
+covariance function) are accounted and thus a generalized penalized
 least squares are minimized.
 
 If \code{center} is TRUE, then a population mean will be calculated and is smoothed by
 univariate P-spline smoothing:\code{pspline} (Eilers and Marx, 1996). This univariate
 smoothing uses leave-one-subject-out cross validation to select the smoothing parameter.
 
+If \code{knots.option} is "equally-spaced", then the differencing penalty in Eilers and Marx (2003)
+is used; if \code{knots.option} is "quantile" then the integrated squared second order derivative
+                                                penalty in Wood (2016) is used.
+                                                
 If the functional data are observed at the same grid for each function/curve
 and can be organized into
 a data matrix, then \code{fpca.face} in the package \code{refund}
@@ -116,8 +122,8 @@ is not NULL, then predicted scores will be calculated.}
 \item{\dots}{\dots}
 }
 \references{
-Luo Xiao, Cai Li, Will Checkley and Ciprian Crainiceanu, Fast covariance estimation
-for sparse functional data, manuscript.
+Luo Xiao, Cai Li, William Checkley and Ciprian Crainiceanu, Fast covariance estimation
+for sparse functional data, available at \url{https://arxiv.org/abs/1603.05758}.
 
 Paul Eilers and Brian  Marx, Multivariate calibration with temperature
 interaction using two-dimensional penalized signal regression,
@@ -125,6 +131,9 @@ Chemometrics and Intelligent Laboratory Systems 66 (2003), 159-174.
 
 Paul Eilers and Brian Marx, Flexible smoothing with B-splines and penalties,
 Statist. Sci., 11, 89-121, 1996.
+ 
+Simon N. Wood, P-splines with derivative based penalties and tensor product 
+  smoothing of unevenly distributed data, Stat. Comput., doi:10.1007/s11222-016-9666-x.
 }
 \author{
 Luo Xiao <lxiao5@ncsu.edu> and Cai Li <cli9@ncsu.edu>
