@@ -10,8 +10,8 @@ Fast Covariance Estimation for Sparse Functional Data
 \tabular{ll}{
 Package: \tab face\cr
 Type: \tab Package\cr
-Version: \tab 0.1-2\cr
-Date: \tab 2017-01-02\cr
+Version: \tab 0.1-3\cr
+Date: \tab 2017-03-30\cr
 License: GPL-3
 }
 }
@@ -22,7 +22,7 @@ Maintainer: Luo Xiao <lxiao5@ncsu.edu>
 }
 \references{
 Luo Xiao, Cai Li, William Checkley and Ciprian Crainiceanu, Fast covariance estimation
-for sparse functional data, available at \url{https://arxiv.org/abs/1603.05758}.
+for sparse functional data, Stat. Comput., \doi{10.1007/s11222-017-9744-8}.
 }
 \keyword{ package }
 
