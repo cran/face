@@ -10,11 +10,11 @@ from a cluster of functions/longitudinal observations.}
 \usage{
 face.sparse(data, newdata = NULL,
              center = TRUE, argvals.new = NULL,
-             knots = 7, knots.option="equally-spaced",
+             knots = 7, 
              p = 3, m = 2, lambda = NULL, lambda_mean = NULL,
              search.length = 14, 
              lower = -3, upper = 10, lower2 = -3, upper2 = 5,
-             calculate.scores = FALSE,pve=0.99)
+             calculate.scores = FALSE,pve=0.99,two_step=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -43,11 +43,6 @@ then 100 equidistant points in the range of \code{data$argvals}.
     The resulting number of basis functions is the number of interior knots plus the degree of B-splines.
 }
 
-\item{knots.option}{
-if \code{knots} specifies the number of knots, then \code{knots.option} will be used.  Default
-"equally-spaced", then equally-spaced knots in the range of observed time points will be selected; alternatively,
-"quantile": quantiles of the observed time points will be selected; see details.
-}
 
 \item{p}{
 the degrees of B-splines; defaults to 3.
@@ -77,6 +72,9 @@ if TRUE, scores will be calculated.
 \item{pve}{
 Defaults 0.99. To select the number of eigenvalues by percentage of variance.
 }
+\item{two_step}{
+if TRUE, a two-step estimation procedure will be applied.
+}
 }
 \details{
 This is a generalized version of bivariate P-splines (Eilers and Marx, 2003) for
@@ -96,9 +94,8 @@ If \code{center} is TRUE, then a population mean will be calculated and is smoot
 univariate P-spline smoothing:\code{pspline} (Eilers and Marx, 1996). This univariate
 smoothing uses leave-one-subject-out cross validation to select the smoothing parameter.
 
-If \code{knots.option} is "equally-spaced", then the differencing penalty in Eilers and Marx (2003)
-is used; if \code{knots.option} is "quantile" then the integrated squared second order derivative
-                                                penalty in Wood (2016) is used.
+The knots are "equally-spaced", the differencing penalty in Eilers and Marx (2003)
+is used.
                                                 
 If the functional data are observed at the same grid for each function/curve
 and can be organized into

@@ -49,7 +49,7 @@ face.sparse.inner <- function(data, newdata = NULL, W = NULL,
   r <- y
   mu.new <- rep(0,length(tnew))
   if(center){
-    fit_mean <- pspline(data,argvals.new=tnew,knots=knots.initial,knots.option=knots.option,lambda=lambda_mean)
+    fit_mean <- pspline(data,argvals.new=tnew,knots=knots.initial,lambda=lambda_mean)
     mu.new <- fit_mean$mu.new
     r <- y - fit_mean$fitted.values 
   }
@@ -235,7 +235,7 @@ face.sparse.inner <- function(data, newdata = NULL, W = NULL,
   mu.pred <- rep(0,length(newdata$argvals))
   var.error.pred <- rep(sigma2,length(newdata$argvals))
   if(center){
-    mu.pred <- predict.pspline(fit_mean,newdata$argvals)
+    mu.pred <- predict.pspline.face(fit_mean,newdata$argvals)
   }
   
   subj.pred = newdata$subj
