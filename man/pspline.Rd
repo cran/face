@@ -76,6 +76,7 @@ Luo Xiao <lxiao5@ncsu.edu>
  \code{\link{gam}} in \code{\link{mgcv}}.
 }
 \examples{
+\dontrun{
 ## cd4 data
 require(refund)
 data(cd4)
@@ -102,6 +103,7 @@ plot(data$argvals,fit$mu.new,type="p")
 ## prediction
 pred <- predict(fit,quantile(data$argvals,c(0.2,0.6)))
 pred
+}
 }
 
 \keyword{~Pspline}
