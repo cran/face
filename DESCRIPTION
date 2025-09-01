@@ -1,7 +1,19 @@
 Package: face
 Title: Fast Covariance Estimation for Sparse Functional Data
-Version: 0.1-7
-Author: Luo Xiao [aut], Cai Li [aut,cre], William Checkley [aut], Ciprian Crainiceanu [aut]
+Version: 0.1-8
+Authors@R: c(person(given = "Cai",
+                    family = "Li",
+                    role = c("aut", "cre"),
+                    email = "cai.li.stats@gmail.com"),
+             person(given = "Luo",
+                    family = "Xiao",
+                    role = "aut"),
+             person(given = "William",
+                    family = "Checkley",
+                    role = "aut"),
+             person(given = "Ciprian",
+                    family = "Crainiceanu",
+                    role = "aut"))
 Maintainer: Cai Li <cai.li.stats@gmail.com>
 Description: We implement the Fast Covariance Estimation for 
              Sparse Functional Data paper published in Statistics and Computing <doi: 10.1007/s11222-017-9744-8>.
@@ -12,5 +24,9 @@ LazyLoad: yes
 Repository: CRAN
 RoxygenNote: 7.1.1
 NeedsCompilation: no
-Packaged: 2022-07-18 10:07:52 UTC; cli9
-Date/Publication: 2022-07-18 11:40:02 UTC
+Packaged: 2025-08-31 23:48:25 UTC; cli9
+Author: Cai Li [aut, cre],
+  Luo Xiao [aut],
+  William Checkley [aut],
+  Ciprian Crainiceanu [aut]
+Date/Publication: 2025-09-01 05:00:02 UTC
